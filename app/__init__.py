@@ -3,6 +3,7 @@ from .extensions import api, db
 from .searchedValueNS import SearchedValue
 from .all_values import all_values
 from .all_values_station import all_val_station
+from .get_station_info import all_info_station
 
 def create_app():
     
@@ -15,4 +16,5 @@ def create_app():
     api.add_namespace(SearchedValue)
     api.add_namespace(all_values)
     api.add_namespace(all_val_station)
+    api.add_namespace(all_info_station)
     return app
