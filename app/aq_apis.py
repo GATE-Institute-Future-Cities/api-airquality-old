@@ -46,9 +46,17 @@ class AllStations(Resource):
                 'longitude':longlat[0][1], ## LONGITUDE
                 'operator': operator[0][0], ## operator name
                 'operatorWeb': operator[0][1], ## operator website
-                'operatorEmail': operator[0][2] ## operator email
+                'operatorEmail': operator[0][2], ## operator email
+                'contactEmail': '', ## empty for now
+                'contactPhone': '',
             }
             result.append(record)
 
         cursor.close()
         return jsonify(result)
+    
+@Airquality_apis.route('/api/stations/<stationid>')
+class StationInfo(Resource):
+    @api.doc(description='Get all info about a specific station we have in the database')
+    def get(self, stationdId):
+        pass
