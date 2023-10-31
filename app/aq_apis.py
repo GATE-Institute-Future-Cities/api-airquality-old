@@ -8,11 +8,21 @@ Airquality_apis= Namespace('airquality')
 conn = psycopg2.connect(database="ExEa_main", user="postgres", password="mohi1234", host="localhost", port="5432")
 
 
+def get_paramName(paramIds): ### function that gets all the ids for all the elements that we recive from the db and serches for the paramabreviation in the paramtype table
+    cursor = conn.cursor()
+    all_params = []
+    for param in paramIds:
+        cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (param,))
+        paramname = cursor.fetchone()[0]
+        all_params.append(paramname)
+    return all_params
+
+
 
 @Airquality_apis.route('/api/stations')
 class AllStations(Resource):
     @api.doc(description='Get all info about every station we have in the database')
-    def get(self,):
+    def get(self):
         cursor = conn.cursor()
         cursor.execute(f'SELECT * FROM airqualitystation')
         all_stations = cursor.fetchall() ## get all the stations in the database
@@ -97,6 +107,24 @@ class StationInfo(Resource):
 
 @Airquality_apis.route('/api/telemetry/<stationId>/values')
 class AllValuesLastHour(Resource):
-    @api.doc(description='All the values in the last hour for the specific station')
+    @api.doc(description='gets the value in the last hour for each element and for the specific station')
     def get(self, stationId):
-        pass
+        cursor = conn.cursor()
+        
+        cursor.execute(f'SELECT MAX(measurementdatetime) FROM airqualityobserved')
+        recent_datetime = cursor.fetchone()[0] ## most recent time added to the database
+        
+        cursor.execute('SELECT measuredparameterid, measuredvalue FROM airqualityobserved WHERE measurementdatetime = %s AND stationid = %s', (recent_datetime, stationId))
+        val_element = cursor.fetchall() ## get all the values and elements at the most recent datetime
+        
+        elemntIds = [el[0] for el in val_element] ## all the ids for the elements
+        elementNames = get_paramName(elemntIds) ## func to get the names of the elements
+        elementNames.insert(0, 'Time') ## time column is a default col
+                
+        values = [val[1] for val in val_element] ## all the values for each element in the most recent time
+        values.insert(0, recent_datetime) ## insert the time with the values
+        
+        return(jsonify({
+            'columns': elementNames,
+            'values': values,
+        }))
