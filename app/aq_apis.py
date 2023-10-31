@@ -36,14 +36,14 @@ class AllStations(Resource):
             stationoperatorid = station[5] ## station operator ID 
             
             cursor = conn.cursor()
-            cursor.execute(f'SELECT stationlatitude, stationlongitude FROM stationlocation WHERE id = {stationid}')
+            cursor.execute('SELECT stationlatitude, stationlongitude FROM stationlocation WHERE id = %s', (stationid,))
             longlat = cursor.fetchall() ## get the long lang for the current station
             
-            cursor.execute(f'SELECT brandname FROM stationmodel WHERE id = {stationmodelid}')
+            cursor.execute('SELECT brandname FROM stationmodel WHERE id = %s', (stationmodelid,))
             model = cursor.fetchone()[0] ## get the brand name of the model
             
             
-            cursor.execute(f'SELECT operatorname, operatorweb, operatoremail FROM stationoperator WHERE id = {stationoperatorid}')
+            cursor.execute('SELECT operatorname, operatorweb, operatoremail FROM stationoperator WHERE id = %s', (stationoperatorid,))
             operator = cursor.fetchall() ## get the operator name
             
             
@@ -70,7 +70,7 @@ class StationInfo(Resource):
     @api.doc(description='Get all info about a specific station we have in the database')
     def get(self, stationId):
         cursor = conn.cursor()
-        cursor.execute(f'SELECT * FROM airqualitystation WHERE stationid = {stationId}')
+        cursor.execute('SELECT * FROM airqualitystation WHERE stationid = %s', (stationId,))
         stationinfo = cursor.fetchone() ## get all info about the station in the database
         
         stationname = stationinfo[1] ## station name
@@ -79,14 +79,14 @@ class StationInfo(Resource):
         stationoperatorid = stationinfo[5] ## station operator ID 
         
         cursor = conn.cursor()
-        cursor.execute(f'SELECT stationlatitude, stationlongitude FROM stationlocation WHERE id = {stationId}')
+        cursor.execute('SELECT stationlatitude, stationlongitude FROM stationlocation WHERE id = %s', (stationId,))
         longlat = cursor.fetchall() ## get the long lang for the current station
         
-        cursor.execute(f'SELECT brandname FROM stationmodel WHERE id = {stationmodelid}')
+        cursor.execute('SELECT brandname FROM stationmodel WHERE id = %s', (stationmodelid,))
         model = cursor.fetchone()[0] ## get the brand name of the model
         
         
-        cursor.execute(f'SELECT operatorname, operatorweb, operatoremail FROM stationoperator WHERE id = {stationoperatorid}')
+        cursor.execute('SELECT operatorname, operatorweb, operatoremail FROM stationoperator WHERE id = %s', (stationoperatorid,))
         operator = cursor.fetchall() ## get the operator name
             
             
@@ -105,7 +105,7 @@ class StationInfo(Resource):
             'contactPhone': '',
         })
 
-@Airquality_apis.route('/api/telemetry/<stationId>/values')
+@Airquality_apis.route('/api/telemetry/<stationId>/values/lasthour')
 class AllValuesLastHour(Resource):
     @api.doc(description='gets the value in the last hour for each element and for the specific station')
     def get(self, stationId):
