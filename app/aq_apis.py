@@ -94,3 +94,9 @@ class StationInfo(Resource):
             'contactEmail': '', ## empty for now
             'contactPhone': '',
         })
+
+@Airquality_apis.route('/api/telemetry/<stationId>/values')
+class AllValuesLastHour(Resource):
+    @api.doc(description='All the values in the last hour for the specific station')
+    def get(self, stationId):
+        pass
