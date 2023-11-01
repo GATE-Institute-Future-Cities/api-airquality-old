@@ -1,6 +1,6 @@
-from flask_restx import Resource, Namespace
+from flask_restx import Resource, Namespace, Api, fields
 from .extensions import api
-from flask import jsonify
+from flask import jsonify, request
 import psycopg2
 
 Airquality_apis= Namespace('airquality')
@@ -128,3 +128,32 @@ class AllValuesLastHour(Resource):
             'columns': elementNames,
             'values': values,
         }))
+        
+        
+
+
+@Airquality_apis.route('/api/telemetry/values/<timeframe>/<stationId>')
+class SelectedData(Resource):
+    @api.doc(description='retrives information about AQ values for a list of specified elements in the specified timeframe')
+    @api.param('selectedElements', 'Comma-separated list of selected elements', _in='query', required=True)
+    def get(self, timeframe, stationId):
+        
+        selectedElements = request.args.get('selectedElements', '').split(',')
+        int_elementids = [int(el) for el in selectedElements]
+
+        all_elements = get_paramName(int_elementids) ## selected elements is a list of ids for the specified elements we call to func to covert to param abreviation
+        all_elements.append(stationId) ## add the stationd ID with the selected fields
+        
+        cursor = conn.cursor()
+        
+        values = [timeframe]
+        for elId in int_elementids:
+            cursor.execute('SELECT measuredvalue FROM airqualityobserved WHERE measuredparameterid = %s AND measurementdatetime = %s AND stationid = %s', (elId, timeframe, stationId))
+            value = cursor.fetchone()[0]
+            values.append(value)
+            
+        cursor.close()
+        return jsonify({
+            'SelectedElements': all_elements,
+            'Values': values,
+        })
