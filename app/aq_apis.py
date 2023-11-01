@@ -159,3 +159,9 @@ class SelectedData(Resource):
             'elements': all_elements,
             'values': values,
         })
+        
+@Airquality_apis.route('/api/telemetry/values/<elementId>/<stationId/<fromDate>/<toDate>')
+class SelectedDatetime(Resource):
+    @api.doc(description = 'get elements values fromdate todate')
+    def get(self, elementId, stationId, fromDate, toDate):
+        pass
