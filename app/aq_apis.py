@@ -1,7 +1,8 @@
-from flask_restx import Resource, Namespace, Api, fields
+from flask_restx import Resource, Namespace, reqparse
 from .extensions import api
-from flask import jsonify, request
+from flask import jsonify
 import psycopg2
+
 
 Airquality_apis= Namespace('airquality')
 
@@ -129,31 +130,32 @@ class AllValuesLastHour(Resource):
             'values': values,
         }))
         
-        
+# parser to parse the 'selectedElements' query parameter as a list of integers
+parser = reqparse.RequestParser()
+parser.add_argument('selectedElements', type=int, action='split', help='List of selected elements', required=True)
 
-
-@Airquality_apis.route('/api/telemetry/values/<timeframe>/<stationId>')
+@Airquality_apis.route('/api/telemetry/values/<stationId>/<timeframe>')
 class SelectedData(Resource):
     @api.doc(description='retrives information about AQ values for a list of specified elements in the specified timeframe')
-    @api.param('selectedElements', 'Comma-separated list of selected elements', _in='query', required=True)
-    def get(self, timeframe, stationId):
+    @api.expect(parser)
+    def get(self, stationId, timeframe):
         
-        selectedElements = request.args.get('selectedElements', '').split(',')
-        int_elementids = [int(el) for el in selectedElements]
-
-        all_elements = get_paramName(int_elementids) ## selected elements is a list of ids for the specified elements we call to func to covert to param abreviation
-        all_elements.append(stationId) ## add the stationd ID with the selected fields
+        args = parser.parse_args()
+        selectedElements = args['selectedElements'] ## list of the chosen element ids
+        
+        all_elements = get_paramName(selectedElements) ## selected elements is a list of ids for the specified elements we call to func to covert to param abreviation
         
         cursor = conn.cursor()
         
-        values = [timeframe]
-        for elId in int_elementids:
-            cursor.execute('SELECT measuredvalue FROM airqualityobserved WHERE measuredparameterid = %s AND measurementdatetime = %s AND stationid = %s', (elId, timeframe, stationId))
-            value = cursor.fetchone()[0]
-            values.append(value)
+        values = []
+        for elId in selectedElements:
+             cursor.execute('SELECT measuredvalue FROM airqualityobserved WHERE measuredparameterid = %s AND measurementdatetime = %s AND stationid = %s', (elId, timeframe, stationId))
+             value = cursor.fetchone()[0]
+             values.append(value)
             
         cursor.close()
         return jsonify({
-            'SelectedElements': all_elements,
-            'Values': values,
+            'dateTime': timeframe,
+            'elements': all_elements,
+            'values': values,
         })
