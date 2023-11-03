@@ -185,17 +185,5 @@ class SelectedDatetimeValues(Resource):
     @api.expect(parser)
     def get(self, elementId, stationId, fromDate, toDate):
         cursor = conn.cursor()
-        
-        cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (elementId,) )
-        elementName = cursor.fetchone()[0]
-        
-        cursor.execute('SELECT measurementdatetime, measuredvalue FROM airqualityobserved WHERE stationid = %s AND measuredparameterid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, elementId, fromDate, toDate))
-        data = cursor.fetchall()
-        
-        return jsonify({
-            'element': elementName,
-            'fromDate': fromDate,
-            'toDate': toDate,
-            'values': data,
-            
-        })
+        args = parser.parse_args()
+        selectedElements = args['selectedElements'] ## list of the chosen element ids
