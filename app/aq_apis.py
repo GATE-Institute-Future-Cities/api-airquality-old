@@ -161,7 +161,7 @@ class SelectedData(Resource):
         
 @Airquality_apis.route('/api/telemetry/values/<elementId>/<stationId>/<fromDate>/<toDate>')
 class SelectedDatetime(Resource):
-    @api.doc(description = 'get elements values fromdate todate')
+    @api.doc(description = 'get specific element values fromdate todate')
     def get(self, elementId, stationId, fromDate, toDate):
         cursor = conn.cursor()
         
@@ -179,3 +179,23 @@ class SelectedDatetime(Resource):
             
         })
         
+@Airquality_apis.route('/api/telemetry/values/<elementId>/<stationId>/<fromDate>/<toDate>')
+class SelectedDatetimeValues(Resource):
+    @api.doc(description = 'get elements values fromdate todate ')
+    @api.expect(parser)
+    def get(self, elementId, stationId, fromDate, toDate):
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (elementId,) )
+        elementName = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT measurementdatetime, measuredvalue FROM airqualityobserved WHERE stationid = %s AND measuredparameterid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, elementId, fromDate, toDate))
+        data = cursor.fetchall()
+        
+        return jsonify({
+            'element': elementName,
+            'fromDate': fromDate,
+            'toDate': toDate,
+            'values': data,
+            
+        })
