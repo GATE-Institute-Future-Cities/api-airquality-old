@@ -187,3 +187,10 @@ class SelectedDatetimeValues(Resource):
         cursor = conn.cursor()
         args = parser.parse_args()
         selectedElements = args['selectedElements'] ## list of the chosen element ids
+        
+        all_elements = get_paramName(selectedElements) ## selected elements is a list of ids for the specified elements we call to func to covert to param abreviation
+
+        result = []
+        
+        for el in selectedElements:
+            cursor.execute('SELECT measurementdatetime, measuredvalue FROM airqualityobserved WHERE stationid = %s AND measuredparameterid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, el, fromDate, toDate))
