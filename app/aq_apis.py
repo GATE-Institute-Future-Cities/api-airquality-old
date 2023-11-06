@@ -179,18 +179,35 @@ class SelectedDatetime(Resource):
             
         })
         
-@Airquality_apis.route('/api/telemetry/values/<elementId>/<stationId>/<fromDate>/<toDate>')
+@Airquality_apis.route('/api/telemetry/values/elements/<stationId>/<fromDate>/<toDate>')
 class SelectedDatetimeValues(Resource):
     @api.doc(description = 'get elements values fromdate todate ')
     @api.expect(parser)
-    def get(self, elementId, stationId, fromDate, toDate):
+    def get(self, stationId, fromDate, toDate):
+        
         cursor = conn.cursor()
         args = parser.parse_args()
         selectedElements = args['selectedElements'] ## list of the chosen element ids
         
         all_elements = get_paramName(selectedElements) ## selected elements is a list of ids for the specified elements we call to func to covert to param abreviation
 
-        result = []
+        values = {}
         
         for el in selectedElements:
-            cursor.execute('SELECT measurementdatetime, measuredvalue FROM airqualityobserved WHERE stationid = %s AND measuredparameterid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, el, fromDate, toDate))
+            
+            cursor.execute('SELECT measuredvalue FROM airqualityobserved WHERE stationid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, fromDate, toDate))
+            data = cursor.fetchall()
+            
+            cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (el,) )
+            elementName = cursor.fetchone()[0] 
+            
+            for d in data:
+                values.append(d[0])
+            
+        return jsonify({
+            'FromDate': fromDate,
+            'ToDate': toDate,
+            'values': values,
+        })
+            
+        
