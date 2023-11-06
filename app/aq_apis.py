@@ -132,7 +132,7 @@ class AllValuesLastHour(Resource):
         
 # parser to parse the 'selectedElements' query parameter as a list of integers
 parser = reqparse.RequestParser()
-parser.add_argument('selectedElements', type=int, action='split', help='List of selected elements', required=True)
+parser.add_argument('selectedElements', type=int, action='split', help='List of selected element ids', required=True)
 
 @Airquality_apis.route('/api/telemetry/values/<stationId>/<timeframe>')
 class SelectedData(Resource):
@@ -161,7 +161,7 @@ class SelectedData(Resource):
         
 @Airquality_apis.route('/api/telemetry/values/<elementId>/<stationId>/<fromDate>/<toDate>')
 class SelectedDatetime(Resource):
-    @api.doc(description = 'get specific element values fromdate todate')
+    @api.doc(description = 'get specific element values fromdate todate included')
     def get(self, elementId, stationId, fromDate, toDate):
         cursor = conn.cursor()
         
@@ -181,7 +181,7 @@ class SelectedDatetime(Resource):
         
 @Airquality_apis.route('/api/telemetry/values/elements/<stationId>/<fromDate>/<toDate>')
 class SelectedDatetimeValues(Resource):
-    @api.doc(description = 'get elements values fromdate todate ')
+    @api.doc(description = 'get elements values fromdate todate included')
     @api.expect(parser)
     def get(self, stationId, fromDate, toDate):
         
@@ -189,25 +189,26 @@ class SelectedDatetimeValues(Resource):
         args = parser.parse_args()
         selectedElements = args['selectedElements'] ## list of the chosen element ids
         
-        values = {}
-        
+        values = {}     
         for el in selectedElements:
             
             cursor.execute('SELECT measuredvalue FROM airqualityobserved WHERE stationid = %s AND measuredparameterid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, el, fromDate, toDate))
-            data = cursor.fetchall()
-            print(data)
-            cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (el,) )
-            elementName = cursor.fetchone()[0] 
+            data = cursor.fetchall() ## get the values for the specified element which is el in between the dates inserted including the value from the dates
             
-            for d in data:
-                if elementName in values:
-                    values[elementName] += d
-                values[elementName] = d
-             
+            cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (el,) )
+            elementName = cursor.fetchone()[0] ## getting the name abbriviation
+            
+
+            if elementName not in values: ##simple check if the elements is in dict or not
+                values[elementName] = []
+                
+            values[elementName].extend([d[0] for d in data]) ## getting the values as ints instead of a list with the value
+            
+            
         return jsonify({
             'FromDate': fromDate,
             'ToDate': toDate,
-            'values': values,
+            'Data': values,
         })
             
         
