@@ -189,21 +189,21 @@ class SelectedDatetimeValues(Resource):
         args = parser.parse_args()
         selectedElements = args['selectedElements'] ## list of the chosen element ids
         
-        all_elements = get_paramName(selectedElements) ## selected elements is a list of ids for the specified elements we call to func to covert to param abreviation
-
         values = {}
         
         for el in selectedElements:
             
-            cursor.execute('SELECT measuredvalue FROM airqualityobserved WHERE stationid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, fromDate, toDate))
+            cursor.execute('SELECT measuredvalue FROM airqualityobserved WHERE stationid = %s AND measuredparameterid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, el, fromDate, toDate))
             data = cursor.fetchall()
-            
+            print(data)
             cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (el,) )
             elementName = cursor.fetchone()[0] 
             
             for d in data:
-                values.append(d[0])
-            
+                if elementName in values:
+                    values[elementName] += d
+                values[elementName] = d
+             
         return jsonify({
             'FromDate': fromDate,
             'ToDate': toDate,
