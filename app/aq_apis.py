@@ -66,15 +66,16 @@ class AllStations(Resource):
         cursor.close()
         return jsonify(result)
     
-@Airquality_apis.route('/api/stations/<stationId>')
+@Airquality_apis.route('/api/stations/<stationName>')
 class StationInfo(Resource):
     @api.doc(description='Get all info about a specific station we have in the database')
-    def get(self, stationId):
+    def get(self, stationName):
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM airqualitystation WHERE stationid = %s', (stationId,))
+        cursor.execute('SELECT * FROM airqualitystation WHERE stationname = %s', (stationName,))
         stationinfo = cursor.fetchone() ## get all info about the station in the database
         
-        stationname = stationinfo[1] ## station name
+        print(stationinfo)
+        stationId = stationinfo[0] ## station Id
         stationserialnumber = stationinfo[2] ## serial number 
         stationmodelid = stationinfo[3] ## station model ID
         stationoperatorid = stationinfo[5] ## station operator ID 
@@ -94,7 +95,7 @@ class StationInfo(Resource):
         cursor.close()
         return jsonify({
             'id': stationId,
-            'name': stationname,## name
+            'name': stationName,## name
             'serialNumber': stationserialnumber, ## serial number 
             'model': model, # brand name of the model
             'latitude': longlat[0][0], ## LATIDUTE
