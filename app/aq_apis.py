@@ -169,15 +169,18 @@ class SelectedData(Resource):
             'values': values,
         })
         
-@Airquality_apis.route('/api/telemetry/values/<elementId>/<stationName>/<fromDate>/<toDate>')
+@Airquality_apis.route('/api/telemetry/values/<elementAbbreviation>/<stationName>/<fromDate>/<toDate>')
 class SelectedDatetime(Resource):
     @api.doc(description = 'get specific element values fromdate todate included')
-    def get(self, elementId, stationName, fromDate, toDate):
+    def get(self, elementAbbreviation, stationName, fromDate, toDate):
         cursor = conn.cursor()
         
-        stationId = getStationId(stationName)
+        stationId = getStationId(stationName) ## station id
         
-        cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (elementId,) )
+        cursor.execute('SELECT id FROM parametertype WHERE parameterabbreviation = %s', (elementAbbreviation,))
+        elementId = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT parametername FROM parametertype WHERE parameterabbreviation = %s', (elementAbbreviation,) )
         elementName = cursor.fetchone()[0]
         
         cursor.execute('SELECT measurementdatetime, measuredvalue FROM airqualityobserved WHERE stationid = %s AND measuredparameterid = %s AND measurementdatetime BETWEEN %s AND %s', (stationId, elementId, fromDate, toDate))
