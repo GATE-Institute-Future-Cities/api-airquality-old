@@ -142,15 +142,17 @@ class AllValuesLastHour(Resource):
 parser = reqparse.RequestParser()
 parser.add_argument('selectedElements', type=int, action='split', help='List of selected element ids', required=True)
 
-@Airquality_apis.route('/api/telemetry/values/<stationId>/<timeframe>')
+@Airquality_apis.route('/api/telemetry/values/<stationName>/<timeframe>')
 class SelectedData(Resource):
     @api.doc(description='retrives information about AQ values for a list of specified elements in the specified timeframe')
     @api.expect(parser)
-    def get(self, stationId, timeframe):
+    def get(self, stationName, timeframe):
         
         cursor = conn.cursor()
         args = parser.parse_args()
         selectedElements = args['selectedElements'] ## list of the chosen element ids
+        
+        stationId = getStationId(stationName) ##station id
         
         all_elements = get_paramName(selectedElements) ## selected elements is a list of ids for the specified elements we call to func to covert to param abreviation
                 
@@ -167,11 +169,13 @@ class SelectedData(Resource):
             'values': values,
         })
         
-@Airquality_apis.route('/api/telemetry/values/<elementId>/<stationId>/<fromDate>/<toDate>')
+@Airquality_apis.route('/api/telemetry/values/<elementId>/<stationName>/<fromDate>/<toDate>')
 class SelectedDatetime(Resource):
     @api.doc(description = 'get specific element values fromdate todate included')
-    def get(self, elementId, stationId, fromDate, toDate):
+    def get(self, elementId, stationName, fromDate, toDate):
         cursor = conn.cursor()
+        
+        stationId = getStationId(stationName)
         
         cursor.execute('SELECT parameterabbreviation FROM parametertype WHERE id = %s', (elementId,) )
         elementName = cursor.fetchone()[0]
@@ -187,13 +191,16 @@ class SelectedDatetime(Resource):
             
         })
         
-@Airquality_apis.route('/api/telemetry/values/elements/<stationId>/<fromDate>/<toDate>')
+@Airquality_apis.route('/api/telemetry/values/elements/<stationName>/<fromDate>/<toDate>')
 class SelectedDatetimeValues(Resource):
     @api.doc(description = 'get elements values fromdate todate included')
     @api.expect(parser)
-    def get(self, stationId, fromDate, toDate):
+    def get(self, stationName, fromDate, toDate):
         
         cursor = conn.cursor()
+        
+        stationId = getStationId(stationName)
+        
         args = parser.parse_args()
         selectedElements = args['selectedElements'] ## list of the chosen element ids
         
