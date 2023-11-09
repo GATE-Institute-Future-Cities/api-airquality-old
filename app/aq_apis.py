@@ -18,6 +18,11 @@ def get_paramName(paramIds): ### function that gets all the ids for all the elem
         all_params.append(paramname)
     return all_params
 
+def getStationId(stationName):
+    cursor = conn.cursor()
+    cursor.execute('SELECT stationid FROM airqualitystation WHERE stationname = %s', (stationName,))
+    stationid = cursor.fetchone()[0]
+    return stationid
 
 
 @Airquality_apis.route('/api/stations')
@@ -107,11 +112,13 @@ class StationInfo(Resource):
             'contactPhone': '',
         })
 
-@Airquality_apis.route('/api/telemetry/<stationId>/values/lasthour')
+@Airquality_apis.route('/api/telemetry/<stationName>/values/lasthour')
 class AllValuesLastHour(Resource):
     @api.doc(description='gets the value in the last hour for each element and for the specific station')
-    def get(self, stationId):
+    def get(self, stationName):
         cursor = conn.cursor()
+        
+        stationId = getStationId(stationName)
         
         cursor.execute(f'SELECT MAX(measurementdatetime) FROM airqualityobserved')
         recent_datetime = cursor.fetchone()[0] ## most recent time added to the database
