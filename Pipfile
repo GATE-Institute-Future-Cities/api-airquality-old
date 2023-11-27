@@ -9,6 +9,8 @@ flask-restx = "*"
 flask-sqlalchemy = "*"
 python-dotenv = "*"
 psycopg2 = "*"
+flask-httpauth = "*"
+werkzeug = "*"
 
 [dev-packages]
 

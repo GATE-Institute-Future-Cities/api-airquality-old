@@ -4,7 +4,7 @@ from .aq_apis import Airquality_apis
 
 def create_app():
     
-    app = Flask(__name__)
+    app = Flask(__name__) 
     
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:mohi1234@localhost/ExEa_main'
     
