@@ -1,5 +1,5 @@
 from flask import Flask
-from .extensions import api, db
+from .extensions import api, db, auth
 from .aq_apis import Airquality_apis
 
 def create_app():
@@ -11,4 +11,6 @@ def create_app():
     api.init_app(app)
     db.init_app(app)
     api.add_namespace(Airquality_apis)
+    
+    auth.init_app(app)
     return app

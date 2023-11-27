@@ -1,6 +1,4 @@
-from flask_httpauth import HTTPDigestAuth
-
-auth = HTTPDigestAuth()
+from .extensions import auth
 
 users= {
     'mo': '123',
