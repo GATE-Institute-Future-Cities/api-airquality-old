@@ -2,10 +2,11 @@ from flask_restx import Resource, Namespace
 from .extensions import api
 from flask import jsonify
 import psycopg2
+from config import db_config
 
 all_values = Namespace('all data for element')
 
-conn = psycopg2.connect(database="ExEa_main", user="postgres", password="mohi1234", host="localhost", port="5432")
+conn = psycopg2.connect(**db_config)
 cursor = conn.cursor()
 
 def get_paramname(paramid):

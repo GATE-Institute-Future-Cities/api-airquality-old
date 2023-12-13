@@ -2,10 +2,11 @@ from flask_restx import Resource, Namespace
 from .extensions import api
 from flask import jsonify
 import psycopg2
+from config import db_config
 
 station = Namespace('stations')
 
-conn = psycopg2.connect(database="ExEA", user="postgres", password="mohi1234", host="localhost", port="5432")
+conn = psycopg2.connect(**db_config)
 
 
 
